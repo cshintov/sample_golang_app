@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  app:
+    # build:
+    #   context: . 
+    #   dockerfile: Dockerfile
+    image: helloworld:ssh.1.0
+    command: ["tail", "-f", "/dev/null"]
+    ports:
+      - "3002:3002" 
+    volumes:
+      - .:/app
+      - ~/.ssh:/home/shinto/.ssh
+    user: "${UID}:${GID}"
+    networks: 
+      - backend
+
+networks:
+  backend: 

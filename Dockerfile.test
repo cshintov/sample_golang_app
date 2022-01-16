@@ -1,0 +1,6 @@
+# syntax = docker/dockerfile:1.2
+FROM alpine
+FROM golang:1.17-alpine
+RUN apk add --no-cache openssh-client
+RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+RUN --mount=type=ssh ssh -q -T git@github.com 2>&1 | tee /hello
