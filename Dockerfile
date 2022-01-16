@@ -21,17 +21,22 @@ RUN --mount=type=ssh \
     --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
+RUN echo "hai" > /app/test
+RUN cat /app/test
+
 RUN --mount=target=. \
     --mount=type=ssh \
     --mount=type=cache,target=/root/.cache/go-build \  
     --mount=type=cache,target=/go/pkg/mod \
-    go build .
+    go build -o /main .
 
 RUN chown -R shinto:shinto /go
 USER shinto
 EXPOSE 3000
 
 
-FROM golang:1.17-buster AS app
+# FROM golang:1.17-buster AS app
+FROM scratch AS app
 WORKDIR /app
-COPY --from=base /app/main ./
+COPY --from=base /main ./
+ENTRYPOINT ["/app/main"]
