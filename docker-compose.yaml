@@ -2,9 +2,6 @@ version: '3'
 
 services:
   app:
-    # build:
-    #   context: . 
-    #   dockerfile: Dockerfile.dev
     image: helloworld:ssh.1.5
     command: ["tail", "-f", "/dev/null"]
     ports:
@@ -12,7 +9,6 @@ services:
     volumes:
       - .:/app
       - ~/.ssh:/home/shinto/.ssh
-    user: "${UID}:${GID}"
     networks: 
       - backend
 
