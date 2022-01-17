@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y openssh-server
 WORKDIR /app
 
 # Creating user shinto (same as host) with home directory
-# For avoiding permission issues for src code in host and container
+# For avoiding permission issues for files created in container
 RUN groupadd -g 1001 shinto
 RUN useradd --create-home --shell /bin/bash -u 1001 -g 1001 shinto
 RUN usermod -aG sudo shinto
@@ -23,7 +23,7 @@ ENV GOPATH=/home/shinto/go
 # This only works with root user
 COPY go.* .
 RUN --mount=type=ssh \
-    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/home/shinto/go/pkg/mod \
     go mod download
 
 # Change owner of the GOPATH directory
