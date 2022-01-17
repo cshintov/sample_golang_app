@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.2
+
 FROM golang:1.17-buster AS base
 
 LABEL maintainer="Shinto C V <cshintov@gmail.com>"
@@ -6,37 +8,28 @@ RUN apt-get update && apt-get install -y openssh-server
 
 WORKDIR /app
 
+# Creating user shinto (same as host) with home directory
+# For avoiding permission issues for src code in host and container
 RUN groupadd -g 1001 shinto
 RUN useradd --create-home --shell /bin/bash -u 1001 -g 1001 shinto
 RUN usermod -aG sudo shinto
-# RUN mkdir -p /go/pkg/mod
 
 RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 RUN git config --global --add url."git@github.com:".insteadOf "https://github.com/"
 
-ENV GO_ENABLED=0
-COPY go.* .
+# Change gopath from /go to
+ENV GOPATH=/home/shinto/go
 
+# This only works with root user
+COPY go.* .
 RUN --mount=type=ssh \
     --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
-RUN echo "hai" > /app/test
-RUN cat /app/test
+# Change owner of the GOPATH directory
+RUN chown -R shinto:shinto /home/shinto/go
 
-RUN --mount=target=. \
-    --mount=type=ssh \
-    --mount=type=cache,target=/root/.cache/go-build \  
-    --mount=type=cache,target=/go/pkg/mod \
-    go build -o /main .
+ENV GO_ENABLED=0
 
-RUN chown -R shinto:shinto /go
 USER shinto
 EXPOSE 3000
-
-
-# FROM golang:1.17-buster AS app
-FROM scratch AS app
-WORKDIR /app
-COPY --from=base /main ./
-ENTRYPOINT ["/app/main"]

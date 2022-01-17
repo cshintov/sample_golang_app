@@ -1,0 +1,30 @@
+FROM golang:1.17-buster AS base
+
+LABEL maintainer="Shinto C V <cshintov@gmail.com>"
+
+RUN apt-get update && apt-get install -y openssh-server
+
+WORKDIR /app
+
+RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
+RUN git config --global --add url."git@github.com:".insteadOf "https://github.com/"
+
+ENV GO_ENABLED=0
+COPY go.* .
+
+RUN --mount=type=ssh \
+    --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
+RUN --mount=target=. \
+    --mount=type=ssh \
+    --mount=type=cache,target=/root/.cache/go-build \  
+    --mount=type=cache,target=/go/pkg/mod \
+    go build -o /main .
+
+EXPOSE 3000
+
+FROM scratch AS app
+WORKDIR /app
+COPY --from=base /main ./
+ENTRYPOINT ["/app/main"]

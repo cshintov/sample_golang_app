@@ -4,8 +4,8 @@ services:
   app:
     # build:
     #   context: . 
-    #   dockerfile: Dockerfile
-    image: helloworld:ssh.1.1
+    #   dockerfile: Dockerfile.dev
+    image: helloworld:ssh.1.5
     command: ["tail", "-f", "/dev/null"]
     ports:
       - "3002:3002" 
